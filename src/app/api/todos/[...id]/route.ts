@@ -1,13 +1,16 @@
+import {eq} from "drizzle-orm";
+
+import { db } from '@/db' 
+import { todos } from '@/db/schema'
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const data = await fetch(`http://localhost:5000/todos/${params.id}`).then(res => res.json())
-  
-  return Response.json(data)
+  const todo = await db.select().from(todos).where(eq(todos.id, +params.id))
+
+  return Response.json(todo[0])
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  await fetch(`http://localhost:5000/todos/${params.id}`, {
-    method: "DELETE"
-  })
+  await db.delete(todos).where(eq(todos.id, +params.id))
 
   return Response.json({message: "Todo deleted"})
 }
@@ -15,10 +18,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   const body = await request.json()
 
-  await fetch(`http://localhost:5000/todos/${params.id}`, {
-    method: "PATCH",
-    body: JSON.stringify(body)
-  })
+  await db.update(todos).set(body).where(eq(todos.id, +params.id))
 
   return Response.json({message: "Todo updated"})
 }
